@@ -1,0 +1,35 @@
+[
+  {
+    "title": "Junior Front-End Developer",
+    "description": "We are looking for a junior front-end developer to join our team and work on exciting projects.",
+    "company": "ABC Corp",
+    "salaryFrom": "50000",
+    "salaryTo": "60000",
+    "currency": "USD",
+    "offerURL": "https://abc-corp.com/careers/junior-front-end-developer",
+    "tech": ["Javascript", "Node.js", "MySQL"],
+    "addedAt": "2022-03-01T09:00:00Z"
+  },
+  {
+    "title": "JavaScript Developer Trainee",
+    "description": "We are looking for a JavaScript developer trainee who wants to learn and grow with us.",
+    "company": "XYZ Inc",
+    "salaryFrom": "40000",
+    "salaryTo": "50000",
+    "currency": "USD",
+    "offerURL": "https://xyz-inc.com/careers/javascript-developer-trainee",
+    "tech": ["Javascript", "Node.js", "MySQL"],
+    "addedAt": "2022-03-15T12:00:00Z"
+  },
+  {
+    "title": "Junior Full-Stack Developer",
+    "description": "We are looking for a junior full-stack developer to work on our web applications.",
+    "company": "123 LLC",
+    "salaryFrom": "45000",
+    "salaryTo": "55000",
+    "currency": "USD",
+    "offerURL": "https://123-llc.com/careers/junior-full-stack-developer",
+    "tech": ["Javascript", "Node.js", "MySQL"],
+    "addedAt": "2022-03-20T14:00:00Z"
+  }
+]

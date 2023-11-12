@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "server": "ts-node ./src/server.ts",
+    "scrap:offers": "ts-node ./src/scripts/findOffers.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.7",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2"
+  }
+}
