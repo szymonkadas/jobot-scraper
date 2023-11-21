@@ -34,7 +34,7 @@ export default class Scrapper {
 
   launch = async () => {
     this.browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
     });
     await this.launchNewPage();
   };
@@ -56,14 +56,8 @@ export default class Scrapper {
   };
 
   click = async (pathToElement: string, timeout = 10000) => {
-    // for unknown reasons without try catch node is detached from document.
-    try {
-      await this.page.click(pathToElement);
-    } catch (e) {
-      // Like this should be enought, but it has to be within try catch...
-      await this.page.waitForSelector(pathToElement, { timeout: timeout });
-      await this.page.click(pathToElement);
-    }
+    await this.page.waitForSelector(pathToElement, { timeout: timeout });
+    await this.page.click(pathToElement);
   };
 
   type = async (pathToElement: string, text?: string) => {
@@ -83,10 +77,10 @@ export default class Scrapper {
     properties: string[],
     maxRecords?: boolean,
     dataDivider?: boolean,
-    optional?: false
+    optional?: boolean
   ) => {
     try {
-      this.scrollThroughPage(20);
+      await this.scrollThroughPage(5);
       await this.page.waitForSelector(scrapePath, { timeout: 10000 });
     } catch (e) {
       if (optional) {
@@ -95,7 +89,6 @@ export default class Scrapper {
         throw e;
       }
     }
-    await setTimeout(async () => {}, this.reactionTime() * 5);
     const data = await this.page.evaluate(
       (scrapePath, maxRecords, properties) => {
         const foundElements = Array.from(document.querySelectorAll(scrapePath)).slice(0, maxRecords);
@@ -118,7 +111,7 @@ export default class Scrapper {
     await this.page.evaluate(async (maxScrolls) => {
       await new Promise((resolve) => {
         let totalHeight = 0;
-        const distance = 100;
+        const distance = 200;
         let scrolls = 0;
         const timer = setInterval(() => {
           var scrollHeight = document.body.scrollHeight;
@@ -131,7 +124,7 @@ export default class Scrapper {
             clearInterval(timer);
             resolve("Finished scrolling");
           }
-        }, 100);
+        }, 200);
       });
     }, maxScrolls);
   };

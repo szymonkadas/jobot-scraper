@@ -41,16 +41,27 @@ const findOffers = async () => {
     true,
     true
   );
+
   const links = await ScrapperInstance.getData();
   const dataArray = [];
-  for (const link of links.split(ScrapperInstance.dataDivider)) {
-    console.log(link);
-    await setTimeout(async () => await ScrapperInstance.navigate(link), ScrapperInstance.reactionTime() * 5);
+  const processLink = async (link) => {
+    await ScrapperInstance.navigate(link);
     let salaryFrom: string;
     const [salaryTo, currency] = (
       await ScrapperInstance.scrape("[data-test='text-earningAmountValueTo']", ["innerText"])
     ).split(" ");
-    const operationalSystems = await ScrapperInstance.scrape("[data-test='item-operating-system'] image", ["alt"]);
+
+    const technologies = await ScrapperInstance.scrape("[data-test='section-technologies'] .offer-viewEX0Eq-", [
+      "innerText",
+    ]);
+    const operationalSystems: string[] = await ScrapperInstance.scrape(
+      "[data-test='item-operating-system'] image",
+      ["alt"],
+      false,
+      true,
+      true
+    ).then((data) => data.split(ScrapperInstance.dataDivider));
+
     try {
       salaryFrom = (await ScrapperInstance.scrape("[data-test='text-earningAmountValueFrom']", ["innerText"])).slice(
         0,
@@ -59,35 +70,38 @@ const findOffers = async () => {
     } catch (e) {
       salaryFrom = salaryTo;
     }
-    const data: JobOffer = await {
+
+    const data = await {
       title: await ScrapperInstance.scrape("[data-scroll-id='job-title']", ["innerText"]),
       description: await ScrapperInstance.scrape(
         ".offer-viewzxQhTZ > :not(.offer-view8N6um9, .offer-viewsBrte4, [data-test='section-technologies'])",
         ["innerText"]
       ),
       company: await ScrapperInstance.scrape("[data-scroll-id='employer-name']", ["innerText"]).then((data) =>
-        // chopping off "About the company".
         data.slice(0, -17)
       ),
       salaryFrom: salaryFrom,
       salaryTo: salaryTo,
       currency: currency,
       offerURL: link,
-      technologies: `${await ScrapperInstance.scrape("[data-test='section-technologies'] .offer-viewEX0Eq-", [
-        "innerText",
-      ])}\n${operationalSystems}`
+      technologies: technologies
         .split("\n")
+        .concat(operationalSystems)
         .filter((word) => word !== ""),
       addedAt: "https://it.pracuj.pl",
     };
+
     await dataArray.push(await data);
-    console.log(data.salaryFrom);
-    await setTimeout(() => {}, ScrapperInstance.reactionTime() * 5);
+  };
+
+  for (const link of links.split(ScrapperInstance.dataDivider)) {
+    await processLink(link);
   }
 
-  // await ScrapperInstance.close();
+  await ScrapperInstance.close();
   setTimeout(() => {
     console.log(`${links.split(ScrapperInstance.dataDivider).length} offers found`);
+    console.log(dataArray);
   }, 3000);
 };
 
