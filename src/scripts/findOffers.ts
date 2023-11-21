@@ -1,9 +1,21 @@
 import Scrapper from "../bot/scrapper/scrapper";
+
+interface JobOffer {
+  title: string;
+  description: string;
+  company: string;
+  salaryFrom: string;
+  salaryTo: string;
+  currency: string;
+  offerURL: string;
+  technologies: string[];
+  addedAt: string;
+}
 const findOffers = async () => {
   console.log("Scrapping...");
   const ScrapperInstance = new Scrapper({ searchValue: "frontend", maxRecords: 4 });
   await ScrapperInstance.launch();
-  await ScrapperInstance.navigate("https://www.pracuj.pl/");
+  await ScrapperInstance.navigate("https://it.pracuj.pl/");
   try {
     // accept only necessary cookies
     await ScrapperInstance.click("[data-test='button-customizeCookie']");
@@ -11,39 +23,71 @@ const findOffers = async () => {
   } catch (e) {
     console.log("no need to accept cookies");
   }
-  // zaznaczam it
-  await ScrapperInstance.click('[data-test="tab-item-it"]');
   // wpisuję w searchbarze searchvalue zapisane w configu.
   await ScrapperInstance.type(".core_fhefgxl");
   // klikam searcha
-  await ScrapperInstance.click('[data-test="section-search-with-filters-it"] > .core_b1fqykql');
-  // zaznaczam widełki! Potrzebny jest full screen, inaczej trzeba będzie dodać odpowiednie kroki.
-  try {
-    await ScrapperInstance.click(".core_sm237sg", 5000);
-  } catch (e) {
-    await ScrapperInstance.click(".b95l1wx .core_brjyyp .core_b1fqykql");
-  }
-  // klikam searcha jeszcze raz.
   await ScrapperInstance.click(".core_s1cjjpc4 .core_b1fqykql");
   // posortuj wedle najbardziej pasujących.
-  try {
-    await ScrapperInstance.click(".listing_lkjndla", 5000);
-    await ScrapperInstance.click(".listing_covfkjq > .listing_o1bn1ih4:nth-of-type(2)", 5000);
-  } catch (e) {
-    await ScrapperInstance.click(".listing_l1b5wr8p");
-    await ScrapperInstance.click(".listing_onyjmg2:nth-of-type(2)");
+  await ScrapperInstance.click(".listing_l1b5wr8p");
+  await ScrapperInstance.click(".listing_onyjmg2:nth-of-type(2)");
+  // zaznaczam widełki!
+  await ScrapperInstance.click(".core_sm237sg", 5000);
+  // klikam searcha jeszcze raz.
+  await ScrapperInstance.click(".core_s1cjjpc4 .core_b1fqykql");
+  // zgromadź linki
+  await ScrapperInstance.scrape(
+    '[data-test="section-offers"] div .core_n194fgoq:not(.c1s2myew *)',
+    ["href"],
+    true,
+    true
+  );
+  const links = await ScrapperInstance.getData();
+  const dataArray = [];
+  for (const link of links.split(ScrapperInstance.dataDivider)) {
+    console.log(link);
+    await setTimeout(async () => await ScrapperInstance.navigate(link), ScrapperInstance.reactionTime() * 5);
+    let salaryFrom: string;
+    const [salaryTo, currency] = (
+      await ScrapperInstance.scrape("[data-test='text-earningAmountValueTo']", ["innerText"])
+    ).split(" ");
+    const operationalSystems = await ScrapperInstance.scrape("[data-test='item-operating-system'] image", ["alt"]);
+    try {
+      salaryFrom = (await ScrapperInstance.scrape("[data-test='text-earningAmountValueFrom']", ["innerText"])).slice(
+        0,
+        -1
+      );
+    } catch (e) {
+      salaryFrom = salaryTo;
+    }
+    const data: JobOffer = await {
+      title: await ScrapperInstance.scrape("[data-scroll-id='job-title']", ["innerText"]),
+      description: await ScrapperInstance.scrape(
+        ".offer-viewzxQhTZ > :not(.offer-view8N6um9, .offer-viewsBrte4, [data-test='section-technologies'])",
+        ["innerText"]
+      ),
+      company: await ScrapperInstance.scrape("[data-scroll-id='employer-name']", ["innerText"]).then((data) =>
+        // chopping off "About the company".
+        data.slice(0, -17)
+      ),
+      salaryFrom: salaryFrom,
+      salaryTo: salaryTo,
+      currency: currency,
+      offerURL: link,
+      technologies: `${await ScrapperInstance.scrape("[data-test='section-technologies'] .offer-viewEX0Eq-", [
+        "innerText",
+      ])}\n${operationalSystems}`
+        .split("\n")
+        .filter((word) => word !== ""),
+      addedAt: "https://it.pracuj.pl",
+    };
+    await dataArray.push(await data);
+    console.log(data.salaryFrom);
+    await setTimeout(() => {}, ScrapperInstance.reactionTime() * 5);
   }
 
-  // zgromadź linki
-  await ScrapperInstance.scrape('[data-test="section-offers"] div .core_n194fgoq', ["href"]);
-  // scrap location of description: ".offer-viewzxQhTZ"; Chociaż może lepiej rozbić i zrobić z tego porządniejszego jsona?
-  const links = await ScrapperInstance.getData();
-  await links.split(ScrapperInstance.linkDivider).forEach((link) => {
-    ScrapperInstance.navigate(link);
-    // logika brania rzeczy joł joł
-  });
+  // await ScrapperInstance.close();
   setTimeout(() => {
-    console.log(`${links.split(ScrapperInstance.linkDivider).length} offers found`);
+    console.log(`${links.split(ScrapperInstance.dataDivider).length} offers found`);
   }, 3000);
 };
 
@@ -51,10 +95,4 @@ findOffers();
 
 // przenieś potem ten kod do funkcji scrap first service.
 
-/*
-  const links = await ScrapperInstance.scrape('[data-test="section-offers"] div .listing-it_n194fgoq', ["href"]);
-  // scrap location of description: ".offer-viewzxQhTZ"; Chociaż może lepiej rozbić i zrobić z tego porządniejszego jsona?
-  await links.forEach((link) => {
-    console.log(link);
-  });
-*/
+// TODO: new linesy zmienić na spacje, pola z tylko spacją usunąć.
