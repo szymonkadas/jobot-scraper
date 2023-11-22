@@ -11,6 +11,7 @@ interface ScrapperOptions {
 interface OptionalScrapperOptions {
   searchValue?: string;
   maxRecords?: number;
+  linkDivider?: string;
 }
 
 export default class Scrapper {
@@ -18,8 +19,9 @@ export default class Scrapper {
   public maxRecords: number;
   public browser: Browser;
   public page: Page;
-  public scrapedData: Object;
-  public html: string;
+  public scrapedData: string;
+  public dataDivider: string = ";data-divider;";
+
   // Scrapper should be a set of methods that you could use for navigating through scrapped website.
   constructor({ searchValue, maxRecords }: ScrapperOptions) {
     this.changeConfig({ searchValue, maxRecords });
@@ -31,34 +33,100 @@ export default class Scrapper {
   };
 
   launch = async () => {
-    this.browser = await puppeteer.launch();
+    this.browser = await puppeteer.launch({
+      headless: true,
+    });
+    await this.launchNewPage();
+  };
+
+  launchNewPage = async () => {
     this.page = await this.browser.newPage();
+    await this.page.setUserAgent(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    );
+    await this.page.setViewport({ width: 1920, height: 1080 });
+  };
+
+  reactionTime = () => {
+    return Math.max(682, Math.round(Math.random() * 1500));
+  };
+
+  applyReactionTime = async (sloppiness: number) => {
+    await new Promise((resolve) => setTimeout(resolve, this.reactionTime() * sloppiness));
+  };
+
+  click = async (pathToElement: string, timeout = 10000) => {
+    await this.page.waitForSelector(pathToElement, { timeout: timeout });
+    await this.page.click(pathToElement);
+  };
+
+  type = async (pathToElement: string, text?: string) => {
+    await this.page.waitForSelector(pathToElement);
+    await this.page.type(pathToElement, text ? text : this.searchValue);
+    await this.page.keyboard.press("Enter");
   };
 
   navigate = async (navTo: string) => {
-    await this.page.goto(navTo);
+    // await this.launchNewPage();
+    await setTimeout(async () => {}, this.reactionTime() * 5);
+    await this.page.goto(navTo, { timeout: 6000 });
   };
 
-  scrape = async (properties: string[]) => {
-    this.html = await this.page.content();
-    const searchValue = this.searchValue;
-    const maxRecords = this.maxRecords;
+  scrape = async (
+    scrapePath: string,
+    properties: string[],
+    maxRecords?: boolean,
+    dataDivider?: boolean,
+    optional?: boolean
+  ) => {
+    try {
+      await this.scrollThroughPage(5);
+      await this.page.waitForSelector(scrapePath, { timeout: 10000 });
+    } catch (e) {
+      if (optional) {
+        return "";
+      } else {
+        throw e;
+      }
+    }
     const data = await this.page.evaluate(
-      (searchValue, maxRecords, properties) => {
-        const foundElements = Array.from(document.querySelectorAll(searchValue)).slice(0, maxRecords);
+      (scrapePath, maxRecords, properties) => {
+        const foundElements = Array.from(document.querySelectorAll(scrapePath)).slice(0, maxRecords);
         return foundElements.map((element) => {
-          const result = {};
-          properties.forEach((property) => {
-            result[property] = element[property];
+          return properties.map((property) => {
+            return element[property] !== undefined ? element[property] : element.getAttribute(property);
           });
-          return result;
         });
       },
-      searchValue,
-      maxRecords,
+      scrapePath,
+      maxRecords ? this.maxRecords : undefined,
       properties
     );
-    this.scrapedData = data;
+
+    this.scrapedData = data.join(dataDivider ? this.dataDivider : "");
+    return this.scrapedData;
+  };
+
+  scrollThroughPage = async (maxScrolls) => {
+    await this.page.evaluate(async (maxScrolls) => {
+      await new Promise((resolve) => {
+        let totalHeight = 0;
+        const distance = 200;
+        let scrolls = 0;
+        const timer = setInterval(() => {
+          var scrollHeight = document.body.scrollHeight;
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+          scrolls++;
+
+          // stop scrolling if reached the end or the maximum number of scrolls
+          if (totalHeight >= scrollHeight - window.innerHeight || scrolls >= maxScrolls) {
+            clearInterval(timer);
+            resolve("Finished scrolling");
+          }
+        }, 200);
+      });
+    }, maxScrolls);
   };
 
   getData = () => {
