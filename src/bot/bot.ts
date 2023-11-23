@@ -53,7 +53,10 @@ export class Bot {
       const technologiesSelector = "[data-test='section-technologies'] .offer-viewEX0Eq-";
 
       const title = await ScrapperInstance.scrape(titleSelector, ["innerText"]);
-      const description = await ScrapperInstance.scrape(descriptionSelector, ["innerText"]);
+      const description = (await ScrapperInstance.scrape(descriptionSelector, ["innerText"]))
+        .split("\n")
+        .filter((val) => val !== "")
+        .join(". ");
       // slice to chop off "About the company"
       const company = await ScrapperInstance.scrape(companySelector, ["innerText"]).then((data) => data.slice(0, -17));
       const [salaryTo, currency] = (await ScrapperInstance.scrape(salaryToSelector, ["innerText"])).split(" ");
