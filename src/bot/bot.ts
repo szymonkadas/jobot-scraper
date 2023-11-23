@@ -82,7 +82,7 @@ export class Bot {
         currency,
         offerURL,
         technologies,
-        addedAt: "https://it.pracuj.pl",
+        addedAt: "unknown",
       };
 
       results.push(await data);
