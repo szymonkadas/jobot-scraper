@@ -53,15 +53,18 @@ export default async function PracujScrapper() {
     } catch (e) {
       salaryFrom = salaryTo;
     }
+
     const operationalSystems: string[] = await scrapperInstance
       .scrape(osSelector, ["alt"], false, true, true)
       .then((data) => data.split(scrapperInstance.dataDivider));
+
     const technologies = await scrapperInstance.scrape(technologiesSelector, ["innerText"]).then((data) =>
       data
         .split("\n")
         .concat(operationalSystems)
         .filter((word) => word !== "")
     );
+
     const data: JobOffer = await {
       title,
       description,
@@ -71,7 +74,7 @@ export default async function PracujScrapper() {
       currency,
       offerURL,
       technologies,
-      addedAt: "https://it.pracuj.pl",
+      addedAt: "unknown",
     };
 
     results.push(await data);
