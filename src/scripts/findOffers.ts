@@ -6,13 +6,11 @@ const findOffers = async () => {
   const fileID = getCurrentDateAsUUID();
   const bot = new Bot();
   const result = await bot.scrapFirstService();
-  setTimeout(() => {
-    console.log(`${result.length} offers found`);
-    fileSystem.writeFile(
-      `./scrap-results/${fileID}.json`,
-      JSON.stringify(result),
-      (error) => error && console.log(error)
-    );
-  }, 3000);
+  console.log(`${result.length} offers found`);
+  fileSystem.writeFile(
+    `./scrap-results/${fileID}.json`,
+    JSON.stringify(result),
+    (error) => error && console.log(error)
+  );
 };
 findOffers();
