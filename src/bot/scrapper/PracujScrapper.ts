@@ -1,8 +1,8 @@
 import { JobOffer } from "../bot";
-import Scrapper from "./scrapper";
+import Scrapper, { ScrapperOptions } from "./scrapper";
 
-export default async function PracujScrapper() {
-  const scrapperInstance = new Scrapper({ searchValue: "frontend", maxRecords: 4 });
+export default async function PracujScrapper({ searchValue, limitRecords }: ScrapperOptions) {
+  const scrapperInstance = new Scrapper({ searchValue: searchValue, limitRecords: limitRecords });
   const searchbarSelector = ".core_fhefgxl";
   const searchButtonSelector = ".core_s1cjjpc4 .core_b1fqykql";
   const sortButtonSelector = ".listing_l1b5wr8p";
