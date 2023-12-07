@@ -36,6 +36,11 @@ const server: Server = createServer(async (request, response: ServerResponse) =>
       const scrappedResults = await findOffers(parameters.searchValue, parameters.limitRecords);
       const responseData = JSON.stringify(scrappedResults);
       cache.put(cacheKey, responseData); // put data in cache
+      // schedule revalidation
+      schedule.scheduleJob("* */2 * * *", async () => {
+        cache.del(cacheKey); // Delete this record from cache
+        cache.put(cacheKey, await findOffers(parameters.searchValue, parameters.limitRecords));
+      });
       response.end(responseData);
     }
   } else {
@@ -49,3 +54,10 @@ server.listen(PORT, () => {
     exec("npm run scrap:offers -- -s 'Javascript Developer' -l 30");
   });
 });
+
+// Function to get the future date
+function getFutureDate(hours: number) {
+  let expiryDate = new Date();
+  expiryDate.setMinutes(expiryDate.getMinutes() + hours);
+  return expiryDate;
+}
