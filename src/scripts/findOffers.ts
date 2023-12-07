@@ -13,8 +13,9 @@ program.option("-l, --limitRecords <number>", "4");
 program.parse(process.argv);
 const options: ScrapperOptions = program.opts();
 // finding offers
-const findOffers = async (searchValue: string, limitRecords: number) => {
+export const findOffers = async (searchValue: string, limitRecords: number) => {
   console.log("Scrapping...");
+  console.log(options);
   const fileID = getCurrentDateAsUUID();
   const bot = new Bot({ searchValue, limitRecords });
   const result = await bot.scrapFirstService();
@@ -31,6 +32,7 @@ const findOffers = async (searchValue: string, limitRecords: number) => {
   });
   csvObject.wri;
   csvObject.writeRecords(result).catch((error) => console.log(error));
+  return result;
 };
 
 findOffers(options.searchValue, options.limitRecords);
