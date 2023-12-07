@@ -9,7 +9,8 @@ const PORT = 4200 || process.env.PORT;
 const server: Server = createServer(async (request, response: ServerResponse) => {
   response.writeHead(200, { "Content-Type": "text/plain" });
   const parsedUrl = url.parse(request.url, true);
-  if (parsedUrl.pathname === "/offers" && parsedUrl.query.search_value !== undefined) {
+  // /offers/ length = 8, if it exceeds it then it has search value
+  if (parsedUrl.pathname.startsWith("/offers/") && parsedUrl.pathname.length > 8) {
     let numberRegex = /^\d+$/;
     const limitRecords =
       typeof parsedUrl.query.limit === "string"
@@ -20,12 +21,10 @@ const server: Server = createServer(async (request, response: ServerResponse) =>
         ? parseInt(parsedUrl.query.limit.join(""))
         : 1;
     const parameters = {
-      searchValue:
-        typeof parsedUrl.query.search_value === "string"
-          ? parsedUrl.query.search_value
-          : parsedUrl.query.search_value.join(" "),
+      searchValue: parsedUrl.pathname.split("/")[2],
       limitRecords: limitRecords,
     };
+
     const scrappedResults = await findOffers(parameters.searchValue, parameters.limitRecords);
     response.end(JSON.stringify(scrappedResults));
   } else {

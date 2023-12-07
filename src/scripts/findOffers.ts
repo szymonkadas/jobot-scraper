@@ -14,8 +14,13 @@ program.parse(process.argv);
 const options: ScrapperOptions = program.opts();
 // finding offers
 export const findOffers = async (searchValue: string, limitRecords: number) => {
+  if (!searchValue) {
+    return;
+  }
+  if (limitRecords === undefined) {
+    limitRecords = 4;
+  }
   console.log("Scrapping...");
-  console.log(options);
   const fileID = getCurrentDateAsUUID();
   const bot = new Bot({ searchValue, limitRecords });
   const result = await bot.scrapFirstService();
