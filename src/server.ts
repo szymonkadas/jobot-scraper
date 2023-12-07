@@ -1,6 +1,7 @@
 import { createServer, Server, ServerResponse } from "http";
 import url from "url";
 import { findOffers } from "./scripts/findOffers";
+const cache = require("memory-cache");
 const schedule = require("node-schedule");
 const { exec } = require("child_process");
 
@@ -9,7 +10,6 @@ const PORT = 4200 || process.env.PORT;
 const server: Server = createServer(async (request, response: ServerResponse) => {
   response.writeHead(200, { "Content-Type": "text/plain" });
   const parsedUrl = url.parse(request.url, true);
-  // /offers/ length = 8, if it exceeds it then it has search value
   if (parsedUrl.pathname.startsWith("/offers/") && parsedUrl.pathname.length > 8) {
     let numberRegex = /^\d+$/;
     const limitRecords =
@@ -25,8 +25,19 @@ const server: Server = createServer(async (request, response: ServerResponse) =>
       limitRecords: limitRecords,
     };
 
-    const scrappedResults = await findOffers(parameters.searchValue, parameters.limitRecords);
-    response.end(JSON.stringify(scrappedResults));
+    // Caching
+    const cacheKey = JSON.stringify(parameters); // use parameters as cache key
+    const cachedData = cache.get(cacheKey);
+    if (cachedData) {
+      // if data is in cache, send cached data
+      response.end(cachedData);
+    } else {
+      // if data is not in cache, fetch data and cache it
+      const scrappedResults = await findOffers(parameters.searchValue, parameters.limitRecords);
+      const responseData = JSON.stringify(scrappedResults);
+      cache.put(cacheKey, responseData); // put data in cache
+      response.end(responseData);
+    }
   } else {
     response.end("Hello World!\n");
   }
