@@ -1,6 +1,6 @@
 import { createServer, Server, ServerResponse } from "http";
 import url from "url";
-import { findOffers } from "./scripts/findOffers";
+import findOffers from "./scripts/findOffers";
 const schedule = require("node-schedule");
 const { exec } = require("child_process");
 

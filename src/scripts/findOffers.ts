@@ -1,25 +1,9 @@
 import { Bot } from "../bot/bot";
-import { ScrapperOptions } from "../bot/scrapper/scrapper";
 import getCurrentDateAsUUID from "../utils/getCurrentDateAsUUID";
 
-const fileSystem = require("fs");
-const csvWriter = require("csv-writer");
-const { Command } = require("commander");
-
-// Getting args passed to script
-const program = new Command();
-program.option("-s, --searchValue <string>", "javascript-developer");
-program.option("-l, --limitRecords <number>", "4");
-program.parse(process.argv);
-const options: ScrapperOptions = program.opts();
-// finding offers
-export const findOffers = async (searchValue: string, limitRecords: number) => {
-  if (!searchValue) {
-    return;
-  }
-  if (limitRecords === undefined) {
-    limitRecords = 4;
-  }
+export default async function findOffers(searchValue: string, limitRecords: number) {
+  const fileSystem = require("fs");
+  const csvWriter = require("csv-writer");
   console.log("Scrapping...");
   const fileID = getCurrentDateAsUUID();
   const bot = new Bot({ searchValue, limitRecords });
@@ -38,6 +22,4 @@ export const findOffers = async (searchValue: string, limitRecords: number) => {
   csvObject.wri;
   csvObject.writeRecords(result).catch((error) => console.log(error));
   return result;
-};
-
-findOffers(options.searchValue, options.limitRecords);
+}
