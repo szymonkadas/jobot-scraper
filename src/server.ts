@@ -37,7 +37,8 @@ const server: Server = createServer(async (request, response: ServerResponse) =>
       const responseData = JSON.stringify(scrappedResults);
       cache.put(cacheKey, responseData); // put data in cache
       // schedule revalidation
-      schedule.scheduleJob("* */2 * * *", async () => {
+      let expiryDate = new Date();
+      schedule.scheduleJob(`${expiryDate.getSeconds()} */1 * * * *`, async () => {
         cache.del(cacheKey); // Delete this record from cache
         cache.put(cacheKey, await findOffers(parameters.searchValue, parameters.limitRecords));
       });
