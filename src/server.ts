@@ -3,7 +3,7 @@ import findOffers from "./scripts/findOffers";
 const schedule = require("node-schedule");
 const { exec } = require("child_process");
 
-const PORT = 4200 || process.env.PORT;
+export const PORT = 4200 || process.env.PORT;
 
 const server = createServer(async (request, response) => {
   // Parse the URL from the request
@@ -31,7 +31,4 @@ const server = createServer(async (request, response) => {
 
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}/`);
-  schedule.scheduleJob("* * 9 * * 1-5", () => {
-    exec("npm run scrap:offers -- -s 'Javascript Developer' -l 30");
-  });
 });
