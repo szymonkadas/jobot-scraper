@@ -1,5 +1,4 @@
 import { Bot } from "../bot/bot";
-import { ScrapperOptions } from "../bot/scrapper/scrapper";
 import getCurrentDateAsUUID from "../utils/getCurrentDateAsUUID";
 
 const fileSystem = require("fs");
