@@ -3,33 +3,33 @@ import { Browser, Page } from "puppeteer";
 const puppeteer = require("puppeteer-extra");
 const stealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(stealthPlugin());
-interface ScrapperOptions {
+export interface ScrapperOptions {
   searchValue: string;
-  maxRecords: number;
+  limitRecords: number;
 }
 
-interface OptionalScrapperOptions {
+export interface OptionalScrapperOptions {
   searchValue?: string;
-  maxRecords?: number;
+  limitRecords?: number;
   linkDivider?: string;
 }
 
 export default class Scrapper {
   public searchValue: string;
-  public maxRecords: number;
+  public limitRecords: number;
   public browser: Browser;
   public page: Page;
   public scrapedData: string;
   public dataDivider: string = ";data-divider;";
 
   // Scrapper should be a set of methods that you could use for navigating through scrapped website.
-  constructor({ searchValue, maxRecords }: ScrapperOptions) {
-    this.changeConfig({ searchValue, maxRecords });
+  constructor({ searchValue, limitRecords }: ScrapperOptions) {
+    this.changeConfig({ searchValue, limitRecords });
   }
 
-  changeConfig = ({ searchValue, maxRecords }: OptionalScrapperOptions) => {
+  changeConfig = ({ searchValue, limitRecords }: OptionalScrapperOptions) => {
     this.searchValue = searchValue !== undefined ? searchValue : this.searchValue;
-    this.maxRecords = maxRecords !== undefined ? maxRecords : this.maxRecords;
+    this.limitRecords = limitRecords !== undefined ? limitRecords : this.limitRecords;
   };
 
   launch = async () => {
@@ -75,7 +75,7 @@ export default class Scrapper {
   scrape = async (
     scrapePath: string,
     properties: string[],
-    maxRecords?: boolean,
+    limitRecords?: boolean,
     dataDivider?: boolean,
     optional?: boolean
   ) => {
@@ -90,8 +90,8 @@ export default class Scrapper {
       }
     }
     const data = await this.page.evaluate(
-      (scrapePath, maxRecords, properties) => {
-        const foundElements = Array.from(document.querySelectorAll(scrapePath)).slice(0, maxRecords);
+      (scrapePath, limitRecords, properties) => {
+        const foundElements = Array.from(document.querySelectorAll(scrapePath)).slice(0, limitRecords);
         return foundElements.map((element) => {
           return properties.map((property) => {
             return element[property] !== undefined ? element[property] : element.getAttribute(property);
@@ -99,7 +99,7 @@ export default class Scrapper {
         });
       },
       scrapePath,
-      maxRecords ? this.maxRecords : undefined,
+      limitRecords ? this.limitRecords : undefined,
       properties
     );
 

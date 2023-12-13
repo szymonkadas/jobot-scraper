@@ -1,4 +1,5 @@
 import PracujScrapper from "./scrapper/PracujScrapper";
+import { OptionalScrapperOptions, ScrapperOptions } from "./scrapper/scrapper";
 export interface JobOffer {
   title: string;
   description: string;
@@ -11,6 +12,17 @@ export interface JobOffer {
   addedAt: string;
 }
 export class Bot {
-  // Logic should be encapsulated in bot class body
-  scrapFirstService = PracujScrapper;
+  private searchValue: string;
+  private limitRecords: number;
+
+  constructor({ searchValue, limitRecords }: ScrapperOptions) {
+    this.changeConfig({ searchValue, limitRecords });
+  }
+
+  changeConfig = ({ searchValue, limitRecords }: OptionalScrapperOptions) => {
+    this.searchValue = searchValue !== undefined ? searchValue : this.searchValue;
+    this.limitRecords = limitRecords !== undefined ? limitRecords : this.limitRecords;
+  };
+
+  scrapFirstService = () => PracujScrapper({ searchValue: this.searchValue, limitRecords: this.limitRecords });
 }

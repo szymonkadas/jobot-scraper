@@ -1,8 +1,8 @@
 import { JobOffer } from "../bot";
-import Scrapper from "./scrapper";
+import Scrapper, { ScrapperOptions } from "./scrapper";
 
-export default async function PracujScrapper() {
-  const scrapperInstance = new Scrapper({ searchValue: "frontend", maxRecords: 4 });
+export default async function PracujScrapper({ searchValue, limitRecords }: ScrapperOptions) {
+  const scrapperInstance = new Scrapper({ searchValue: searchValue, limitRecords: limitRecords });
   const searchbarSelector = ".core_fhefgxl";
   const searchButtonSelector = ".core_s1cjjpc4 .core_b1fqykql";
   const sortButtonSelector = ".listing_l1b5wr8p";
@@ -42,7 +42,10 @@ export default async function PracujScrapper() {
     const technologiesSelector = "[data-test='section-technologies'] .offer-viewEX0Eq-";
 
     const title = await scrapperInstance.scrape(titleSelector, ["innerText"]);
-    const description = await scrapperInstance.scrape(descriptionSelector, ["innerText"]);
+    const description = (await scrapperInstance.scrape(descriptionSelector, ["innerText"]))
+      .split("\n")
+      .filter((val) => val !== "")
+      .join(". ");
     // slice to chop off "About the company"
     const company = await scrapperInstance.scrape(companySelector, ["innerText"]).then((data) => data.slice(0, -17));
     const [salaryTo, currency] = (await scrapperInstance.scrape(salaryToSelector, ["innerText"])).split(" ");
@@ -53,18 +56,15 @@ export default async function PracujScrapper() {
     } catch (e) {
       salaryFrom = salaryTo;
     }
-
     const operationalSystems: string[] = await scrapperInstance
       .scrape(osSelector, ["alt"], false, true, true)
       .then((data) => data.split(scrapperInstance.dataDivider));
-
     const technologies = await scrapperInstance.scrape(technologiesSelector, ["innerText"]).then((data) =>
       data
         .split("\n")
         .concat(operationalSystems)
         .filter((word) => word !== "")
     );
-
     const data: JobOffer = await {
       title,
       description,
