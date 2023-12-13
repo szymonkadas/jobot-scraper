@@ -1,23 +1,8 @@
 import { Bot } from "../bot/bot";
 import getCurrentDateAsUUID from "../utils/getCurrentDateAsUUID";
-
-interface programOptions extends ScrapperOptions {
-  saveAsJSON: boolean;
-}
-
 const fileSystem = require("fs");
 const csvWriter = require("csv-writer");
-const { Command } = require("commander");
 
-// Getting args passed to script
-const program = new Command();
-program.option("-s, --searchValue <string>", "specifies phrase for search in services", "javascript-developer");
-program.option("-l, --limitRecords <number>", "specifies how many offers to scrap (if possible)", "4");
-program.option("-d, --saveDataAsJson <boolean>", "specifies whether to save data in JSON if true, or CSV if false.", "true");
-program.parse(process.argv);
-const options: ScrapperOptions & {
-  saveDataAsJson: boolean;
-} = program.opts();
 // finding offers
 const findOffers = async (searchValue: string, limitRecords: number, saveDataAsJson = true) => {
   console.log("Scrapping...");
@@ -40,6 +25,7 @@ const findOffers = async (searchValue: string, limitRecords: number, saveDataAsJ
     csvObject.wri;
     csvObject.writeRecords(result).catch((error) => console.log(error));
   }
+  return result;
 };
 
-findOffers(options.searchValue, options.limitRecords, options.saveDataAsJson);
+export default findOffers;
