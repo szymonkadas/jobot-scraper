@@ -19,7 +19,7 @@ export const server: Server = createServer(async (request, response: ServerRespo
       searchValue: pathMatch[1],
       // Set a default limit of 10, override if a valid limit is provided in the query
       limitRecords: parseInt(parsedUrl.searchParams.get("limit")) || 10,
-      save: parseInt(parsedUrl.searchParams.get("limit")) || 10,
+      save: parseInt(parsedUrl.searchParams.get("json")) || true,
     };
     const cacheKey = JSON.stringify(parameters); // use parameters as cache key
     const cachedData = cache.get(cacheKey);
