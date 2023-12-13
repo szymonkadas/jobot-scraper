@@ -1,5 +1,4 @@
 import { Bot } from "../bot/bot";
-import { ScrapperOptions } from "../bot/scrapper/scrapper";
 import getCurrentDateAsUUID from "../utils/getCurrentDateAsUUID";
 
 interface programOptions extends ScrapperOptions {
@@ -14,15 +13,13 @@ const { Command } = require("commander");
 const program = new Command();
 program.option("-s, --searchValue <string>", "specifies phrase for search in services", "javascript-developer");
 program.option("-l, --limitRecords <number>", "specifies how many offers to scrap (if possible)", "4");
-program.option(
-  "-j, --saveAsJSON <boolean>",
-  "specifies whether to save data in JSON if true, or CSV if false.",
-  "true"
-);
+program.option("-d, --saveDataAsJson <boolean>", "specifies whether to save data in JSON if true, or CSV if false.", "true");
 program.parse(process.argv);
-const options: programOptions = program.opts();
+const options: ScrapperOptions & {
+  saveDataAsJson: boolean;
+} = program.opts();
 // finding offers
-const findOffers = async (searchValue: string, limitRecords: number, saveAsJSON: boolean) => {
+const findOffers = async (searchValue: string, limitRecords: number, saveDataAsJson = true) => {
   console.log("Scrapping...");
   const fileID = getCurrentDateAsUUID();
   const bot = new Bot({ searchValue, limitRecords });
@@ -30,7 +27,7 @@ const findOffers = async (searchValue: string, limitRecords: number, saveAsJSON:
   // finished scraping part:
   console.log(`${result.length} offers found`);
   const savePath = `./scrap-results/${fileID}`;
-  if (saveAsJSON) {
+  if (saveDataAsJson) {
     // save to JSON file
     fileSystem.writeFile(`${savePath}.json`, JSON.stringify(result), (error) => error && console.log(error));
   } else {
@@ -45,4 +42,4 @@ const findOffers = async (searchValue: string, limitRecords: number, saveAsJSON:
   }
 };
 
-findOffers(options.searchValue, options.limitRecords, options.saveAsJSON);
+findOffers(options.searchValue, options.limitRecords, options.saveDataAsJson);
