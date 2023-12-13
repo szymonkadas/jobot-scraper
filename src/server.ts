@@ -2,7 +2,6 @@ import { createServer, Server, ServerResponse } from "http";
 import findOffers from "./scripts/findOffers";
 const cache = require("memory-cache");
 const schedule = require("node-schedule");
-const { exec } = require("child_process");
 
 export const PORT = 4200 || process.env.PORT;
 
@@ -14,12 +13,13 @@ export const server: Server = createServer(async (request, response: ServerRespo
   const pathMatch = parsedUrl.pathname.match(/^\/offers\/([^\/]+)$/);
   if (pathMatch) {
     // Caching
+    const saveAsJson = parsedUrl.searchParams.get("json");
     const parameters = {
       // Extract the searchValue from the URL
       searchValue: pathMatch[1],
       // Set a default limit of 10, override if a valid limit is provided in the query
       limitRecords: parseInt(parsedUrl.searchParams.get("limit")) || 10,
-      save: parseInt(parsedUrl.searchParams.get("json")) || true,
+      saveAsJson: saveAsJson === "true" ? true : saveAsJson === "false" ? false : undefined,
     };
     const cacheKey = JSON.stringify(parameters); // use parameters as cache key
     const cachedData = cache.get(cacheKey);
@@ -28,14 +28,14 @@ export const server: Server = createServer(async (request, response: ServerRespo
       response.end(cachedData);
     } else {
       // if data is not in cache, fetch data and cache it
-      const scrappedResults = await findOffers(parameters.searchValue, parameters.limitRecords);
+      const scrappedResults = await findOffers(parameters.searchValue, parameters.limitRecords, parameters?.saveAsJson);
       const responseData = JSON.stringify(scrappedResults);
       cache.put(cacheKey, responseData); // put data in cache
       // schedule revalidation
       const expiryDate = new Date();
       schedule.scheduleJob(`${expiryDate.getSeconds()} ${expiryDate.getMinutes} */2 * * *`, async () => {
         cache.del(cacheKey); // Delete this record from cache
-        cache.put(cacheKey, await findOffers(parameters.searchValue, parameters.limitRecords));
+        cache.put(cacheKey, await findOffers(parameters.searchValue, parameters.limitRecords, parameters?.saveAsJson));
       });
       // return the offers
       response.writeHead(200, { "Content-Type": "application/json" });

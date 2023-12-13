@@ -11,9 +11,9 @@ const program = new Command();
 program.option("-s, --searchValue <string>", "specifies phrase for search in services", "javascript-developer");
 program.option("-l, --limitRecords <number>", "specifies how many offers to scrap (if possible)", "4");
 program.option(
-  "-d, --saveDataAsJson <boolean>",
-  "specifies whether to save data in JSON if true, or CSV if false.",
-  "true"
+  "-d, --saveAsJson <boolean | undefined>",
+  "specifies whether to save data in JSON if true, or CSV if false, or to none if not provided",
+  "undefined"
 );
 program.parse(process.argv);
 const options: programOptions = program.opts();

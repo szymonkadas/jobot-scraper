@@ -4,7 +4,7 @@ const fileSystem = require("fs");
 const csvWriter = require("csv-writer");
 
 // finding offers
-const findOffers = async (searchValue: string, limitRecords: number, saveDataAsJson = true) => {
+const findOffers = async (searchValue: string, limitRecords: number, saveDataAsJson?: boolean | undefined) => {
   console.log("Scrapping...");
   const fileID = getCurrentDateAsUUID();
   const bot = new Bot({ searchValue, limitRecords });
@@ -15,7 +15,7 @@ const findOffers = async (searchValue: string, limitRecords: number, saveDataAsJ
   if (saveDataAsJson) {
     // save to JSON file
     fileSystem.writeFile(`${savePath}.json`, JSON.stringify(result), (error) => error && console.log(error));
-  } else {
+  } else if (saveDataAsJson === false) {
     // save to CSV file
     const headers = Object.keys(result[0]).map((key) => ({ id: key, title: key }));
     const csvObject = csvWriter.createObjectCsvWriter({
