@@ -34,6 +34,7 @@ export default class Scrapper {
 
   launch = async () => {
     this.browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
       headless: true,
     });
     await this.launchNewPage();
@@ -55,13 +56,13 @@ export default class Scrapper {
     await new Promise((resolve) => setTimeout(resolve, this.reactionTime() * sloppiness));
   };
 
-  click = async (pathToElement: string, timeout = 10000) => {
+  click = async (pathToElement: string, timeout = 120000) => {
     await this.page.waitForSelector(pathToElement, { timeout: timeout });
     await this.page.click(pathToElement);
   };
 
   type = async (pathToElement: string, text?: string) => {
-    await this.page.waitForSelector(pathToElement);
+    await this.page.waitForSelector(pathToElement, { timeout: 120000 });
     await this.page.type(pathToElement, text ? text : this.searchValue);
     await this.page.keyboard.press("Enter");
   };
@@ -69,7 +70,7 @@ export default class Scrapper {
   navigate = async (navTo: string) => {
     // await this.launchNewPage();
     await setTimeout(async () => {}, this.reactionTime() * 5);
-    await this.page.goto(navTo, { timeout: 6000 });
+    await this.page.goto(navTo, { timeout: 120000 });
   };
 
   scrape = async (
@@ -81,7 +82,7 @@ export default class Scrapper {
   ) => {
     try {
       await this.scrollThroughPage(5);
-      await this.page.waitForSelector(scrapePath, { timeout: 10000 });
+      await this.page.waitForSelector(scrapePath, { timeout: 360000 });
     } catch (e) {
       if (optional) {
         return "";

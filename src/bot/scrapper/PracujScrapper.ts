@@ -24,7 +24,7 @@ export default async function PracujScrapper({ searchValue, limitRecords }: Scra
   await scrapperInstance.click(searchButtonSelector);
   await scrapperInstance.click(sortButtonSelector);
   await scrapperInstance.click(mostSuitableSortSelector);
-  await scrapperInstance.click(paycheckRangeSelector, 5000);
+  await scrapperInstance.click(paycheckRangeSelector);
   await scrapperInstance.click(searchButtonSelector);
   await scrapperInstance.scrape(offersSelector, ["href"], true, true);
 
