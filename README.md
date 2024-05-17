@@ -2,7 +2,7 @@
   🤖 Jobot
 </h1>
 
-This project is a bot for scrapping tech job boards.
+Scraper korzystający z puppeteera i node.js scrapujący oferty pracy powstający we współpracy z Nerdbord 
 
 ---
 
